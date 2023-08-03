@@ -1,0 +1,88 @@
+# visit https://rcompanion.org/handbook/G_09.html for more information
+
+install.packages("car")
+library(car)
+install.packages("psych")
+library(psych)
+install.packages("multcomp")
+library(multcomp)
+install.packages("emmeans")
+library(emmeans)
+install.packages("FSA")
+library(FSA)
+install.packages("ggplot2")
+library(ggplot2)
+install.packages("phia")
+library(phia)
+install.packages("praise")
+library(praise)
+install.packages("multcompView")
+library(multcomp)
+
+# set working directory
+
+# call up data
+wk4data <- read.csv("Germination_Week4.csv")
+
+colnames(wk4data)
+
+
+# test for normality: Q-Q plot
+qqnorm(wk4data$PercentageGerminationWeek4, main = "Normality of Week 4 Germination Rates")
+
+# histogram
+hist(wk4data$PercentageGerminationWeek4, main = "Normality of Week 4 Germination Rates")
+
+# test for equality of variance: Levene's test
+# variances are equal if null hypothesis is met
+leveneTest(wk4data$PercentageGerminationWeek4 ~ wk4data$ExtractionMethod)
+leveneTest(wk4data$PercentageGerminationWeek4 ~ wk4data$TreatmentMethod)
+
+
+
+#Two-way AOV, with interaction effect
+
+# Order factor level
+wk4data$ExtractionMethod = factor(wk4data$ExtractionMethod, levels=unique(wk4data$ExtractionMethod))
+
+# check for treatment interaction
+interaction.plot(x.factor     = wk4data$ExtractionMethod,
+                 trace.factor = wk4data$TreatmentMethod,
+                 response     = wk4data$PercentageGerminationWeek4,
+                 fun = mean,
+                 type="b",
+                 col=c("darkgray","blue","orange"),  ### Colors for levels of trace var.
+                 pch=c(19, 17, 15),             ### Symbols for levels of trace var.
+                 fixed=TRUE,                    ### Order by factor order in data
+                 leg.bty = "o")
+
+# conduct AOV on potential significant main effects and/or interactions
+# as indicated from interaction plot
+model = lm(wk4data$PercentageGerminationWeek4 ~ wk4data$ExtractionMethod 
+           + wk4data$TreatmentMethod 
+           + wk4data$ExtractionMethod:wk4data$TreatmentMethod)
+
+library(car)
+
+Anova(model,
+      type = "II")
+
+
+
+# Means separation for significant effects
+library(emmeans)
+
+marginal = emmeans(model,
+                   ~ TreatmentMethod)
+
+pairs(marginal,
+      adjust="tukey")
+
+library(multcomp)
+
+cld(marginal,
+    alpha=0.05,
+    Letters=letters,      ### Use lower-case letters for .group
+    adjust="tukey")       ### Tukey-adjusted comparisons
+
+praise()
