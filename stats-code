@@ -22,21 +22,25 @@ library(multcomp)
 # set working directory
 
 # call up data
-wk4data <- read.csv("Germination_Week4.csv")
+# wk4data <- read.csv("Germination_Week4_imm.csv")
+wk4data <- read.csv("one-month-4week-germination-rate.csv")
+
 
 colnames(wk4data)
 
 
 # test for normality: Q-Q plot
 qqnorm(wk4data$PercentageGerminationWeek4, main = "Normality of Week 4 Germination Rates")
+qqnorm(wk4data$invert, main = "Normality of Week 4 Germination Rates")
 
 # histogram
-hist(wk4data$PercentageGerminationWeek4, main = "Normality of Week 4 Germination Rates")
+hist(wk4data$invert, main = "Normality of Week 4 Germination Rates")
 
 # test for equality of variance: Levene's test
 # variances are equal if null hypothesis is met
-leveneTest(wk4data$PercentageGerminationWeek4 ~ wk4data$ExtractionMethod)
+leveneTest(wk4data$invert ~ wk4data$ExtractionMethod)
 leveneTest(wk4data$PercentageGerminationWeek4 ~ wk4data$TreatmentMethod)
+leveneTest(wk4data$invert ~ wk4data$TreatmentMethod)
 
 
 
@@ -48,7 +52,7 @@ wk4data$ExtractionMethod = factor(wk4data$ExtractionMethod, levels=unique(wk4dat
 # check for treatment interaction
 interaction.plot(x.factor     = wk4data$ExtractionMethod,
                  trace.factor = wk4data$TreatmentMethod,
-                 response     = wk4data$PercentageGerminationWeek4,
+                 response     = wk4data$invert,
                  fun = mean,
                  type="b",
                  col=c("darkgray","blue","orange"),  ### Colors for levels of trace var.
@@ -58,7 +62,7 @@ interaction.plot(x.factor     = wk4data$ExtractionMethod,
 
 # conduct AOV on potential significant main effects and/or interactions
 # as indicated from interaction plot
-model = lm(wk4data$PercentageGerminationWeek4 ~ wk4data$ExtractionMethod 
+model = lm(wk4data$invert ~ wk4data$ExtractionMethod 
            + wk4data$TreatmentMethod 
            + wk4data$ExtractionMethod:wk4data$TreatmentMethod)
 
@@ -72,8 +76,13 @@ Anova(model,
 # Means separation for significant effects
 library(emmeans)
 
+#main effect Treatment Method
 marginal = emmeans(model,
                    ~ TreatmentMethod)
+
+#interaction effect
+marginal = emmeans(model,
+                    ~ ExtractionMethod:TreatmentMethod)
 
 pairs(marginal,
       adjust="tukey")
