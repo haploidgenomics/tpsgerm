@@ -17,12 +17,18 @@ library(phia)
 install.packages("praise")
 library(praise)
 install.packages("multcompView")
-library(multcomp)
+library(multcompView)
+#install.packages("tidyverse")
+#library(tidyverse)
+install.packages("ggpubr")
+library(ggpubr)
+install.packages("rstatix")
+library(rstatix)
 
 # set working directory
 
 # call up data
-# wk4data <- read.csv("Germination_Week4_imm.csv")
+wk4data <- read.csv("Germination_Week4_imm.csv")
 wk4data <- read.csv("one-month-4week-germination-rate.csv")
 
 
@@ -62,7 +68,7 @@ interaction.plot(x.factor     = wk4data$ExtractionMethod,
 
 # conduct AOV on potential significant main effects and/or interactions
 # as indicated from interaction plot
-model = lm(wk4data$invert ~ wk4data$ExtractionMethod 
+model = lm(wk4data$PercentageGerminationWeek4 ~ wk4data$ExtractionMethod 
            + wk4data$TreatmentMethod 
            + wk4data$ExtractionMethod:wk4data$TreatmentMethod)
 
@@ -89,9 +95,220 @@ pairs(marginal,
 
 library(multcomp)
 
-cld(marginal,
+x <- cld(marginal,
     alpha=0.05,
     Letters=letters,      ### Use lower-case letters for .group
     adjust="tukey")       ### Tukey-adjusted comparisons
+
+x
+
+praise()
+
+#barplot(height = x$emmean, names.arg = x$TreatmentMethod, main = "Germination Rate by Treatment Method in 1-Week Old Seeds", xlab = "Treatment Method", ylab = "Percent")
+
+library(ggpubr)
+# ggbarplot(data = x, x = "TreatmentMethod", y = "emmean", fill = "lightgray", 
+          title = "Germination Rate by Treatment Method in 1-Week Old Seeds", 
+          xlab = "Treatment", ylab = "Percent", add = "mean_sd", sort.val = "asc")
+
+# 1 Week treatment method
+ggbarplot(data = wk4data, x = "TreatmentMethod", y = "PercentageGerminationWeek4", 
+          fill = "lightgray", title = "Germination Rate by Treatment Method in 1-Week Old Seeds", 
+          xlab = "Treatment", ylab = "Percent", ylim = c(0,100), add = "mean_se", sort.val = "asc")
+
+# 1 Month interaction effects
+ggbarplot(data = wk4data, x = "ExtractionMethod", y = "invert")
+
+# 1 Month treatment method
+ggbarplot(data = wk4data, x = "TreatmentMethod", y = "PercentageGerminationWeek4", 
+          fill = "lightgray", title = "Germination Rate by Treatment Method in 1-Month Old Seeds", 
+          xlab = "Treatment", ylab = "Percent", ylim = c(0,100), add = "mean_se", sort.val = "asc")
+
+# paired t-test for changes in time
+wk4paireddata <- read.csv("time-factor.csv")
+
+colnames(wk4paireddata)
+
+# Transform into long data: 
+# gather all response variables into a single column
+
+# response variables = raw data
+wk4paired_long <- wk4paireddata %>%
+  gather(key = "group", value = "responseVariables", onewk_PercentGerminationWeek4, onemo_PercentageGerminationWeek4)
+
+head(wk4paired_long)
+colnames(wk4paired_long)
+
+# Shapiro-Wilk test for normality
+# using raw data (not transformed)
+d  <- with(wk4paired_long, 
+           responseVariables[group == "onewk_PercentGerminationWeek4"] - responseVariables[group == "onemo_PercentageGerminationWeek4"])
+shapiro.test(d)
+
+# Levene's test for equality of variance
+library(car)
+leveneTest(wk4paired_long$responseVariables ~ wk4paired_long$group)
+
+
+# rows extracted for comparisons
+unique(wk4paired_long$CombinedMethods)
+
+#WaterWater
+prdf_WW <- wk4paired_long[wk4paired_long$CombinedMethods == "WaterWater", ]
+prdf_WW
+
+#WaterGa
+prdf_WG <- wk4paired_long[wk4paired_long$CombinedMethods == "WaterGa", ]
+prdf_WG
+
+#WaterBleach
+prdf_WB <- wk4paired_long[wk4paired_long$CombinedMethods == "WaterBleach", ]
+prdf_WB
+
+#YeastWater
+prdf_YW <- wk4paired_long[wk4paired_long$CombinedMethods == "YeastWater", ]
+prdf_YW
+
+#YeastGa
+prdf_YG <- wk4paired_long[wk4paired_long$CombinedMethods == "YeastGa", ]
+prdf_YG
+
+#YeastBleach
+prdf_YB <- wk4paired_long[wk4paired_long$CombinedMethods == "YeastBleach", ]
+prdf_YB
+
+#HCLWater
+prdf_HW <- wk4paired_long[wk4paired_long$CombinedMethods == "HCLWater", ]
+prdf_HW
+
+#HCLGa
+prdf_HG <- wk4paired_long[wk4paired_long$CombinedMethods == "HCLGa", ]
+prdf_HG
+
+#HCLBleach
+prdf_HB <- wk4paired_long[wk4paired_long$CombinedMethods == "HCLBleach", ]
+prdf_HB
+
+
+
+# t-tests
+resWW <- t.test(responseVariables ~ group, data = prdf_WW, paired = TRUE, alternative = "less")
+resWW
+
+prdf_WW %>%
+  group_by(group) %>%
+  get_summary_stats(responseVariables, type = "mean_sd")
+
+resWG <- t.test(responseVariables ~ group, data = prdf_WG, paired = TRUE, alternative = "less")
+resWG
+
+prdf_WG %>%
+  group_by(group) %>%
+  get_summary_stats(responseVariables, type = "mean_sd")
+
+resWB <- t.test(responseVariables ~ group, data = prdf_WB, paired = TRUE, alternative = "less")
+resWB
+
+prdf_WB %>%
+  group_by(group) %>%
+  get_summary_stats(responseVariables, type = "mean_sd")
+
+resYW <- t.test(responseVariables ~ group, data = prdf_YW, paired = TRUE, alternative = "less")
+resYW
+
+prdf_YW %>%
+  group_by(group) %>%
+  get_summary_stats(responseVariables, type = "mean_sd")
+
+resYG <- t.test(responseVariables ~ group, data = prdf_YG, paired = TRUE, alternative = "less")
+resYG
+
+prdf_YG %>%
+  group_by(group) %>%
+  get_summary_stats(responseVariables, type = "mean_sd")
+
+resYB <- t.test(responseVariables ~ group, data = prdf_YB, paired = TRUE, alternative = "less")
+resYB
+
+prdf_YB %>%
+  group_by(group) %>%
+  get_summary_stats(responseVariables, type = "mean_sd")
+
+resHW <- t.test(responseVariables ~ group, data = prdf_HW, paired = TRUE, alternative = "less")
+resHW
+
+prdf_HW %>%
+  group_by(group) %>%
+  get_summary_stats(responseVariables, type = "mean_sd")
+
+resHG <- t.test(responseVariables ~ group, data = prdf_HG, paired = TRUE, alternative = "less")
+resHG
+
+prdf_HG %>%
+  group_by(group) %>%
+  get_summary_stats(responseVariables, type = "mean_sd")
+
+resHB <- t.test(responseVariables ~ group, data = prdf_HB, paired = TRUE, alternative = "less")
+resHB
+
+prdf_HB %>%
+  group_by(group) %>%
+  get_summary_stats(responseVariables, type = "mean_sd")
+
+
+
+
+
+# Main effects
+# Extraction method
+prdf_WaterE <- wk4paired_long[wk4paired_long$ExtractionMethod == "Water", ]
+resWaterE <- t.test(responseVariables ~ group, data = prdf_WaterE, paired = TRUE, alternative = "less")
+resWaterE
+
+prdf_WaterE %>%
+  group_by(group) %>%
+  get_summary_stats(responseVariables, type = "mean_sd")
+
+prdf_Yeast <- wk4paired_long[wk4paired_long$ExtractionMethod == "Yeast", ]
+resYeast <- t.test(responseVariables ~ group, data = prdf_Yeast, paired = TRUE, alternative = "less")
+resYeast
+
+prdf_Yeast %>%
+  group_by(group) %>%
+  get_summary_stats(responseVariables, type = "mean_sd")
+
+prdf_HCL <- wk4paired_long[wk4paired_long$ExtractionMethod == "HCL", ]
+resHCL <- t.test(responseVariables ~ group, data = prdf_HCL, paired = TRUE, alternative = "less")
+resHCL
+
+prdf_HCL %>%
+  group_by(group) %>%
+  get_summary_stats(responseVariables, type = "mean_sd")
+
+# Treatment method
+prdf_WaterT <- wk4paired_long[wk4paired_long$TreatmentMethod == "Water", ]
+resWaterT <- t.test(responseVariables ~ group, data = prdf_WaterT, paired = TRUE, alternative = "less")
+resWaterT
+
+prdf_WaterT %>%
+  group_by(group) %>%
+  get_summary_stats(responseVariables, type = "mean_sd")
+
+prdf_Ga <- wk4paired_long[wk4paired_long$TreatmentMethod == "Ga", ]
+resGa <- t.test(responseVariables ~ group, data = prdf_Ga, paired = TRUE, alternative = "less")
+resGa
+
+prdf_Ga %>%
+  group_by(group) %>%
+  get_summary_stats(responseVariables, type = "mean_sd")
+
+prdf_Bleach <- wk4paired_long[wk4paired_long$TreatmentMethod == "Bleach", ]
+resBleach <- t.test(responseVariables ~ group, data = prdf_Bleach, paired = TRUE, alternative = "less")
+resBleach
+
+prdf_Bleach %>%
+  group_by(group) %>%
+  get_summary_stats(responseVariables, type = "mean_sd")
+
 
 praise()
