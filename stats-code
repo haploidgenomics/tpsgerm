@@ -1,4 +1,5 @@
 # visit https://rcompanion.org/handbook/G_09.html for more information
+# R version: 4.3-x86_64 (4.3.0)
 
 install.packages("car")
 library(car)
@@ -14,12 +15,8 @@ install.packages("ggplot2")
 library(ggplot2)
 install.packages("phia")
 library(phia)
-install.packages("praise")
-library(praise)
 install.packages("multcompView")
 library(multcompView)
-#install.packages("tidyverse")
-#library(tidyverse)
 install.packages("ggpubr")
 library(ggpubr)
 install.packages("rstatix")
@@ -28,37 +25,83 @@ library(rstatix)
 # set working directory
 
 # call up data
-wk4data <- read.csv("Germination_Week4_imm.csv")
-wk4data <- read.csv("one-month-4week-germination-rate.csv")
+# 1 week after extraction, hereafter '1 week data'
+wk4data_1wk <- read.csv("one-week-week4-germination-rate.csv")
+colnames(wk4data_1wk)
+
+# 1 month after extraction, hereafter '1 month data'
+wk4data_1mo <- read.csv("one-month-week4-germination-rate.csv")
+colnames(wk4data_1mo)
 
 
-colnames(wk4data)
+# test for normality: Shapiro-Wilk
+# 1 week data (no transformation)
+shapiro.test(wk4data_1wk$PercentGerminationWeek4)
+
+# 1 month data
+shapiro.test(wk4data_1mo$PercentGerminationWeek4) # not transformed
+shapiro.test(wk4data_1mo$invert) # transformed by inversion
+
 
 
 # test for normality: Q-Q plot
-qqnorm(wk4data$PercentageGerminationWeek4, main = "Normality of Week 4 Germination Rates")
-qqnorm(wk4data$invert, main = "Normality of Week 4 Germination Rates")
+# 1 week data (no transformation needed)
+qqnorm(wk4data_1wk$PercentGerminationWeek4, main = "Normality of week 4 germination rates 1 week after seed extraction")
 
-# histogram
-hist(wk4data$invert, main = "Normality of Week 4 Germination Rates")
+# 1 month data
+qqnorm(wk4data_1mo$PercentGerminationWeek4, main = "Normality of week 4 germination rates 1 week after seed extraction")
+qqnorm(wk4data_1mo$invert, main = "Normality of week 4 germination rates 1 month after seed extraction")
+
+
+
+
 
 # test for equality of variance: Levene's test
 # variances are equal if null hypothesis is met
-leveneTest(wk4data$invert ~ wk4data$ExtractionMethod)
-leveneTest(wk4data$PercentageGerminationWeek4 ~ wk4data$TreatmentMethod)
-leveneTest(wk4data$invert ~ wk4data$TreatmentMethod)
+
+library(car)
+# 1 week data
+leveneTest(wk4data_1wk$PercentGerminationWeek4 ~ wk4data_1wk$ExtractionMethod)
+leveneTest(wk4data_1wk$PercentGerminationWeek4 ~ wk4data_1wk$TreatmentMethod)
+
+# 1 month data (transformation needed as shown in next line of code)
+leveneTest(wk4data_1mo$PercentGerminationWeek4 ~ wk4data_1mo$ExtractionMethod)
+leveneTest(wk4data_1mo$PercentGerminationWeek4 ~ wk4data_1mo$TreatmentMethod)
+
+# 1 month data, transformed
+leveneTest(wk4data_1mo$invert ~ wk4data_1mo$ExtractionMethod)
+leveneTest(wk4data_1mo$invert ~ wk4data_1mo$TreatmentMethod)
 
 
 
 #Two-way AOV, with interaction effect
 
 # Order factor level
-wk4data$ExtractionMethod = factor(wk4data$ExtractionMethod, levels=unique(wk4data$ExtractionMethod))
+# 1 week data
+wk4data_1wk$ExtractionMethod = factor(wk4data_1wk$ExtractionMethod, levels=unique(wk4data_1wk$ExtractionMethod))
+
+# 1 month data
+wk4data_1mo$ExtractionMethod = factor(wk4data_1mo$ExtractionMethod, levels=unique(wk4data_1mo$ExtractionMethod))
+
+
 
 # check for treatment interaction
-interaction.plot(x.factor     = wk4data$ExtractionMethod,
-                 trace.factor = wk4data$TreatmentMethod,
-                 response     = wk4data$invert,
+# 1 week data
+interaction.plot(x.factor     = wk4data_1wk$ExtractionMethod,
+                 trace.factor = wk4data_1wk$TreatmentMethod,
+                 response     = wk4data_1wk$PercentGerminationWeek4,
+                 fun = mean,
+                 type="b",
+                 col=c("darkgray","blue","orange"),  ### Colors for levels of trace var.
+                 pch=c(19, 17, 15),             ### Symbols for levels of trace var.
+                 fixed=TRUE,                    ### Order by factor order in data
+                 leg.bty = "o")
+
+
+# 1 month data
+interaction.plot(x.factor     = wk4data_1mo$ExtractionMethod,
+                 trace.factor = wk4data_1mo$TreatmentMethod,
+                 response     = wk4data_1mo$invert,
                  fun = mean,
                  type="b",
                  col=c("darkgray","blue","orange"),  ### Colors for levels of trace var.
@@ -68,61 +111,141 @@ interaction.plot(x.factor     = wk4data$ExtractionMethod,
 
 # conduct AOV on potential significant main effects and/or interactions
 # as indicated from interaction plot
-model = lm(wk4data$PercentageGerminationWeek4 ~ wk4data$ExtractionMethod 
-           + wk4data$TreatmentMethod 
-           + wk4data$ExtractionMethod:wk4data$TreatmentMethod)
+# 1 week data
+model_1wk = lm(wk4data_1wk$PercentGerminationWeek4 ~ wk4data_1wk$ExtractionMethod 
+           + wk4data_1wk$TreatmentMethod 
+           + wk4data_1wk$ExtractionMethod:wk4data_1wk$TreatmentMethod)
+
+# 1 month data
+model_1mo = lm(wk4data_1mo$invert ~ wk4data_1mo$ExtractionMethod 
+           + wk4data_1mo$TreatmentMethod 
+           + wk4data_1mo$ExtractionMethod:wk4data_1mo$TreatmentMethod)
 
 library(car)
 
-Anova(model,
+# 1 week data
+Anova(model_1wk,
       type = "II")
 
-
+# 1 month data
+Anova(model_1mo,
+      type = "II")
 
 # Means separation for significant effects
 library(emmeans)
 
-#main effect Treatment Method
-marginal = emmeans(model,
+# main effect Treatment Method
+# 1 week data
+marginal_trt_1wk = emmeans(model_1wk,
                    ~ TreatmentMethod)
 
+# 1 month data
+marginal_trt_1mo = emmeans(model_1mo,
+                   ~ TreatmentMethod)
+
+
+
 #interaction effect
-marginal = emmeans(model,
+# 1 month data
+marginal_int_1mo = emmeans(model_1mo,
                     ~ ExtractionMethod:TreatmentMethod)
 
-pairs(marginal,
+# 1 week data, treatment effect
+pairs(marginal_trt_1wk,
       adjust="tukey")
 
+# 1 month data, treatment effect
+pairs(marginal_trt_1mo,
+      adjust="tukey")
+
+# 1 month data, interaction effect
+pairs(marginal_int_1mo,
+      adjust="tukey")
+
+
+
+# means separation
 library(multcomp)
 
-x <- cld(marginal,
+# 1 week data, treatment
+x.a <- cld(marginal_trt_1wk,
     alpha=0.05,
     Letters=letters,      ### Use lower-case letters for .group
     adjust="tukey")       ### Tukey-adjusted comparisons
 
-x
+x.a
 
-praise()
+# 1 month data, treatment
+x.b <- cld(marginal_trt_1mo,
+         alpha=0.05,
+         Letters=letters,      ### Use lower-case letters for .group
+         adjust="tukey")       ### Tukey-adjusted comparisons
 
-#barplot(height = x$emmean, names.arg = x$TreatmentMethod, main = "Germination Rate by Treatment Method in 1-Week Old Seeds", xlab = "Treatment Method", ylab = "Percent")
+x.b
 
+
+# 1 month data, interaction
+x.c <- cld(marginal_int_1mo,
+         alpha=0.05,
+         Letters=letters,      ### Use lower-case letters for .group
+         adjust="tukey")       ### Tukey-adjusted comparisons
+
+x.c
+
+
+
+
+# make bar plots
 library(ggpubr)
-# ggbarplot(data = x, x = "TreatmentMethod", y = "emmean", fill = "lightgray", 
-          title = "Germination Rate by Treatment Method in 1-Week Old Seeds", 
-          xlab = "Treatment", ylab = "Percent", add = "mean_sd", sort.val = "asc")
 
-# 1 Week treatment method
-ggbarplot(data = wk4data, x = "TreatmentMethod", y = "PercentageGerminationWeek4", 
+# 1 week data, main effect extraction method
+ggbarplot(data = wk4data_1wk, x = "ExtractionMethod", y = "PercentGerminationWeek4", 
+          fill = "lightgray", title = "Germination Rate by Extraction Method in 1-Week Old Seeds", 
+          xlab = "Extraction Method", ylab = "Percent", ylim = c(0,100), add = "mean_se", sort.val = "none")
+
+# 1 month data, main effect extraction method, backtransformed
+ggbarplot(data = wk4data_1mo, x = "ExtractionMethod", y = "PercentGerminationWeek4", 
+          fill = "lightgray", title = "Germination Rate by Extraction Method in 1-Month Old Seeds", 
+          xlab = "Extraction Method", ylab = "Percent", ylim = c(0,100), add = "mean_se", sort.val = "none")
+
+# 1 week data, main effect treatment method
+ggbarplot(data = wk4data_1wk, x = "TreatmentMethod", y = "PercentGerminationWeek4", 
           fill = "lightgray", title = "Germination Rate by Treatment Method in 1-Week Old Seeds", 
-          xlab = "Treatment", ylab = "Percent", ylim = c(0,100), add = "mean_se", sort.val = "asc")
+          xlab = "Seed Treatment", ylab = "Percent", ylim = c(0,100), add = "mean_se", sort.val = "none")
 
-# 1 Month interaction effects
-ggbarplot(data = wk4data, x = "ExtractionMethod", y = "invert")
-
-# 1 Month treatment method
-ggbarplot(data = wk4data, x = "TreatmentMethod", y = "PercentageGerminationWeek4", 
+# 1 month data, main effect treatment method, backtransformed
+ggbarplot(data = wk4data_1mo, x = "TreatmentMethod", y = "PercentGerminationWeek4", 
           fill = "lightgray", title = "Germination Rate by Treatment Method in 1-Month Old Seeds", 
-          xlab = "Treatment", ylab = "Percent", ylim = c(0,100), add = "mean_se", sort.val = "asc")
+          xlab = "Seed Treatment", ylab = "Percent", ylim = c(0,100), add = "mean_se", sort.val = "none")
+
+# 1 week data, interaction effect
+# concatenate Extraction Method and Treatment Method
+wk4data_1wk$IntMethod = paste(wk4data_1wk$ExtractionMethod, wk4data_1wk$TreatmentMethod)
+colnames(wk4data_1wk)
+
+ggbarplot(data = wk4data_1wk, x = "IntMethod", 
+          y = "PercentGerminationWeek4",
+          add = "mean_se", fill = "lightgray", 
+          sort.by.groups = TRUE, x.text.angle = 90,
+          title = "One Week Interaction Effects",
+          xlab = "Extraction and Seed Treatment Method", 
+          ylab = "Percent", ylim = c(0,100))
+
+# 1 month data, interaction effect, backtransformed
+# concatenate Extraction Method and Treatment Method
+wk4data_1mo$IntMethod = paste(wk4data_1mo$ExtractionMethod, wk4data_1mo$TreatmentMethod)
+colnames(wk4data_1mo)
+
+ggbarplot(data = wk4data_1mo, x = "IntMethod", 
+          y = "PercentGerminationWeek4",
+          add = "mean_se", fill = "lightgray", 
+          sort.by.groups = TRUE, x.text.angle = 90,
+          title = "One Month Interaction Effects",
+          xlab = "Extraction and Seed Treatment Method", 
+          ylab = "Percent", ylim = c(0,100))
+
+
+
 
 # paired t-test for changes in time
 wk4paireddata <- read.csv("time-factor.csv")
@@ -158,7 +281,7 @@ prdf_WW <- wk4paired_long[wk4paired_long$CombinedMethods == "WaterWater", ]
 prdf_WW
 
 #WaterGa
-prdf_WG <- wk4paired_long[wk4paired_long$CombinedMethods == "WaterGa", ]
+prdf_WG <- wk4paired_long[wk4paired_long$CombinedMethods == "WaterGA3", ]
 prdf_WG
 
 #WaterBleach
@@ -170,7 +293,7 @@ prdf_YW <- wk4paired_long[wk4paired_long$CombinedMethods == "YeastWater", ]
 prdf_YW
 
 #YeastGa
-prdf_YG <- wk4paired_long[wk4paired_long$CombinedMethods == "YeastGa", ]
+prdf_YG <- wk4paired_long[wk4paired_long$CombinedMethods == "YeastGA3", ]
 prdf_YG
 
 #YeastBleach
@@ -182,7 +305,7 @@ prdf_HW <- wk4paired_long[wk4paired_long$CombinedMethods == "HCLWater", ]
 prdf_HW
 
 #HCLGa
-prdf_HG <- wk4paired_long[wk4paired_long$CombinedMethods == "HCLGa", ]
+prdf_HG <- wk4paired_long[wk4paired_long$CombinedMethods == "HCLGA3", ]
 prdf_HG
 
 #HCLBleach
@@ -257,8 +380,6 @@ prdf_HB %>%
 
 
 
-
-
 # Main effects
 # Extraction method
 prdf_WaterE <- wk4paired_long[wk4paired_long$ExtractionMethod == "Water", ]
@@ -294,7 +415,7 @@ prdf_WaterT %>%
   group_by(group) %>%
   get_summary_stats(responseVariables, type = "mean_sd")
 
-prdf_Ga <- wk4paired_long[wk4paired_long$TreatmentMethod == "Ga", ]
+prdf_Ga <- wk4paired_long[wk4paired_long$TreatmentMethod == "GA3", ]
 resGa <- t.test(responseVariables ~ group, data = prdf_Ga, paired = TRUE, alternative = "less")
 resGa
 
@@ -310,5 +431,3 @@ prdf_Bleach %>%
   group_by(group) %>%
   get_summary_stats(responseVariables, type = "mean_sd")
 
-
-praise()
