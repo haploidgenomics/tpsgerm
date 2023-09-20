@@ -191,7 +191,7 @@ ggbarplot(data = wk4data_1wk, x = "ExtractionMethod", y = "PercentGerminationWee
           fill = "lightgray", title = "Germination Rate by Extraction Method in 1-Week Old Seeds", 
           xlab = "Extraction Method", ylab = "Percent", ylim = c(0,100), add = "mean_se", sort.val = "none")
 
-# 1 month data, main effect extraction method, backtransformed
+# 1 month data, main effect extraction method, back transformed
 ggbarplot(data = wk4data_1mo, x = "ExtractionMethod", y = "PercentGerminationWeek4", 
           fill = "lightgray", title = "Germination Rate by Extraction Method in 1-Month Old Seeds", 
           xlab = "Extraction Method", ylab = "Percent", ylim = c(0,100), add = "mean_se", sort.val = "none")
@@ -201,7 +201,7 @@ ggbarplot(data = wk4data_1wk, x = "TreatmentMethod", y = "PercentGerminationWeek
           fill = "lightgray", title = "Germination Rate by Treatment Method in 1-Week Old Seeds", 
           xlab = "Seed Treatment", ylab = "Percent", ylim = c(0,100), add = "mean_se", sort.val = "none")
 
-# 1 month data, main effect treatment method, backtransformed
+# 1 month data, main effect treatment method, back transformed
 ggbarplot(data = wk4data_1mo, x = "TreatmentMethod", y = "PercentGerminationWeek4", 
           fill = "lightgray", title = "Germination Rate by Treatment Method in 1-Month Old Seeds", 
           xlab = "Seed Treatment", ylab = "Percent", ylim = c(0,100), add = "mean_se", sort.val = "none")
@@ -219,7 +219,7 @@ ggbarplot(data = wk4data_1wk, x = "IntMethod",
           xlab = "Extraction and Seed Treatment Method", 
           ylab = "Percent", ylim = c(0,100))
 
-# 1 month data, interaction effect, backtransformed
+# 1 month data, interaction effect, back transformed
 # concatenate Extraction Method and Treatment Method
 wk4data_1mo$IntMethod = paste(wk4data_1mo$ExtractionMethod, wk4data_1mo$TreatmentMethod)
 colnames(wk4data_1mo)
