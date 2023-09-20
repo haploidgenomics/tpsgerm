@@ -44,18 +44,6 @@ shapiro.test(wk4data_1mo$invert) # transformed by inversion
 
 
 
-# test for normality: Q-Q plot
-# 1 week data (no transformation needed)
-qqnorm(wk4data_1wk$PercentGerminationWeek4, main = "Normality of week 4 germination rates 1 week after seed extraction")
-
-# 1 month data
-qqnorm(wk4data_1mo$PercentGerminationWeek4, main = "Normality of week 4 germination rates 1 week after seed extraction")
-qqnorm(wk4data_1mo$invert, main = "Normality of week 4 germination rates 1 month after seed extraction")
-
-
-
-
-
 # test for equality of variance: Levene's test
 # variances are equal if null hypothesis is accepted
 
