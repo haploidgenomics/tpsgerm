@@ -57,7 +57,7 @@ qqnorm(wk4data_1mo$invert, main = "Normality of week 4 germination rates 1 month
 
 
 # test for equality of variance: Levene's test
-# variances are equal if null hypothesis is met
+# variances are equal if null hypothesis is accepted
 
 library(car)
 # 1 week data
