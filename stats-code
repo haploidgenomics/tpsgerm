@@ -21,6 +21,8 @@ install.packages("ggpubr")
 library(ggpubr)
 install.packages("rstatix")
 library(rstatix)
+install.packages("dplyr")
+library(dplyr)
 
 # set working directory
 
@@ -59,6 +61,58 @@ leveneTest(wk4data_1mo$PercentGerminationWeek4 ~ wk4data_1mo$TreatmentMethod)
 # 1 month data, transformed
 leveneTest(wk4data_1mo$invert ~ wk4data_1mo$ExtractionMethod)
 leveneTest(wk4data_1mo$invert ~ wk4data_1mo$TreatmentMethod)
+
+
+# get summary stats (mean and standard deviation)
+library(dplyr)
+# 1 week data, Extraction Method
+wk4data_1wk %>%
+  group_by(ExtractionMethod) %>%
+  summarize(mean_percent = mean(PercentGerminationWeek4),
+            sd_percent = sd(PercentGerminationWeek4))
+
+# 1 week data, Treatment Method
+wk4data_1wk %>%
+  group_by(TreatmentMethod) %>%
+  summarize(mean_percent = mean(PercentGerminationWeek4),
+            sd_percent = sd(PercentGerminationWeek4))
+
+# 1 week data, Interaction Effects
+# concatenate Extraction Method and Treatment Method
+wk4data_1wk$IntEff = paste(wk4data_1wk$ExtractionMethod, wk4data_1wk$TreatmentMethod)
+colnames(wk4data_1wk)
+
+head(wk4data_1wk)
+
+wk4data_1wk %>%
+  group_by(IntEff) %>%
+  summarize(mean_percent = mean(PercentGerminationWeek4),
+            sd_percent = sd(PercentGerminationWeek4))
+
+
+# 1 month data, Extraction Method
+wk4data_1mo %>%
+  group_by(ExtractionMethod) %>%
+  summarize(mean_percent = mean(PercentGerminationWeek4),
+            sd_percent = sd(PercentGerminationWeek4))
+
+# 1 month data, Treatment Method
+wk4data_1mo %>%
+  group_by(TreatmentMethod) %>%
+  summarize(mean_percent = mean(PercentGerminationWeek4),
+            sd_percent = sd(PercentGerminationWeek4))
+
+# 1 mo data, Interaction Effects
+# concatenate Extraction Method and Treatment Method
+wk4data_1mo$IntEff = paste(wk4data_1mo$ExtractionMethod, wk4data_1mo$TreatmentMethod)
+colnames(wk4data_1mo)
+
+head(wk4data_1mo)
+
+wk4data_1mo %>%
+  group_by(IntEff) %>%
+  summarize(mean_percent = mean(PercentGerminationWeek4),
+            sd_percent = sd(PercentGerminationWeek4))
 
 
 
@@ -223,6 +277,8 @@ ggbarplot(data = wk4data_1wk, x = "IntMethod",
 # concatenate Extraction Method and Treatment Method
 wk4data_1mo$IntMethod = paste(wk4data_1mo$ExtractionMethod, wk4data_1mo$TreatmentMethod)
 colnames(wk4data_1mo)
+
+head(wk4data_1mo)
 
 ggbarplot(data = wk4data_1mo, x = "IntMethod", 
           y = "PercentGerminationWeek4",
@@ -418,4 +474,6 @@ resBleach
 prdf_Bleach %>%
   group_by(group) %>%
   get_summary_stats(responseVariables, type = "mean_sd")
+
+
 
