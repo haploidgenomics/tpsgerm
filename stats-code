@@ -1,28 +1,32 @@
 # visit https://rcompanion.org/handbook/G_09.html for more information
 # R version: 4.3-x86_64 (4.3.0)
 
-install.packages("car")
+# visit https://rcompanion.org/handbook/G_09.html for more information
+# R version: 4.3-x86_64 (4.3.0)
+
+install.packages("car") # v. 3.1-2
 library(car)
-install.packages("psych")
+install.packages("psych") # v. 2.3.9
 library(psych)
-install.packages("multcomp")
+install.packages("multcomp") # v. 1.4-25
 library(multcomp)
-install.packages("emmeans")
+install.packages("emmeans") # v. 1.8.8
 library(emmeans)
-install.packages("FSA")
+install.packages("FSA") # v. 0.9.5
 library(FSA)
-install.packages("ggplot2")
+install.packages("ggplot2") # v. 3.4.3
 library(ggplot2)
-install.packages("phia")
+install.packages("phia") # v. 0.2-1
 library(phia)
-install.packages("multcompView")
+install.packages("multcompView") # v. 0.1-9
 library(multcompView)
-install.packages("ggpubr")
+install.packages("ggpubr") # v. 0.6.0
 library(ggpubr)
-install.packages("rstatix")
+install.packages("rstatix") # v. 0.7.2
 library(rstatix)
-install.packages("dplyr")
+install.packages("dplyr") # v. 1.1.3
 library(dplyr)
+
 
 # set working directory
 
